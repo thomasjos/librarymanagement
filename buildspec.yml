@@ -1,0 +1,16 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+    commands:
+      - pip install --upgrade pip
+      - pip install -r requirements.txt pylint
+  pre_build:
+    commands:
+      - python --version
+      - pylint --disable=E0401 $CODEBUILD_SRC_DIR/*.py
+      - pylint --disable=E0401 $CODEBUILD_SRC_DIR/Config/*.py
+artifacts:
+  files:
+    - '**/*'
