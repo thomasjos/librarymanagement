@@ -1,0 +1,22 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+      python: 3.7
+  pre_build:
+    commands:
+      - pip install --upgrade pip
+      - pip install -r requirements.txt pylint
+      - apt-get update
+      - apt-get install -y jq
+      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
+      - unzip ./sonar-scanner-cli-4.7.0.2747-linux.zip
+      - export PATH=$PATH:./sonar-scanner-4.7.0.2747-linux/bin/
+  build:
+    commands:
+      - sonar-scanner -Dsonar.login=b79f4ba2ea48dcd75ee6b818f4431979de2508cc -Dsonar.host.url=https://sonarcloud.io -Dsonar.projectKey=thomasjos_librarymanagement -Dsonar.organization=thomasjos -Dsonar.c.file.suffixes= -Dsonar.cpp.file.suffixes= -Dsonar.objc.file.suffixes= -DgeneratePom=true
+      - sleep 5
+      - curl https://sonarcloud.io/api/qualitygates/project_status?projectKey=thomasjos_librarymanagement  >result.json
+      - cat result.json
+      - if [ $(jq -r '.projectStatus.status' result.json) = ERROR ]; then $CODEBUILD_BUILD_SUCCEEDING -eq 0; fi
